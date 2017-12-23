@@ -1,0 +1,27 @@
+#!/bin/bash
+if [ $1 ]; then
+    
+    if [ $1 == "clean" ]; then 
+        rm -f ./lights
+    elif [ $1 == "rm" ]; then
+        rm -f ./input.txt
+        rm -f ./output*.txt
+    elif [ $1 == "cp" ]; then
+        dir="./testCases/$2/*"
+        cp $dir ./
+    elif [ $1 == "zip" ]; then
+        zip -r GA4BackUp.zip *
+        mv GA4BackUp.zip ../
+    elif [ $1 == "val" ]; then
+        g++ *.cpp -o lights
+        if [ $? -eq 0 ]; then
+            valgrind ./lights
+        fi
+    fi
+    ls
+else
+    g++ *.cpp -o lights
+    if [ $? -eq 0 ]; then
+        ./lights
+    fi
+fi

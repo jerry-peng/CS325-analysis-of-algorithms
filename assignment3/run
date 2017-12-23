@@ -1,0 +1,30 @@
+#!/bin/bash
+if [ $1 ]; then
+    
+    if [ $1 == "clean" ]; then 
+        rm -f ./mst
+    elif [ $1 == "rm" ]; then
+        rm -f ./*.txt
+    elif [ $1 == "cp" ]; then
+        rm -f ./*.txt
+        if [ $2 == "e" ]; then
+            cp ./testCases/ExtraCredit/* ./
+        else
+            dir="./testCases/$2/*"
+            cp $dir ./
+        fi
+    elif [ $1 == "zip" ]; then
+        zip -r Assign3BackUp.zip *
+        mv Assign3BackUp.zip ../
+    fi
+
+else
+
+    g++ *.cpp -o mst
+    if [ $? -eq 0 ]; then
+        valgrind ./mst
+    fi
+
+fi
+
+ls

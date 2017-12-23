@@ -1,0 +1,34 @@
+Read this to figure out exactly how to use the provided black-box 2-Sat solvers.
+Do **NOT** submit any of the 2-Sat solvers with your source file, they will not be used, I have my own copies of them.
+This means that any changes you make to the 2-Sat solvers given here will not be used in grading your programs.
+
+A couple of simple tests have been included in each language to demonstrate how to use the 2-Sat solvers.
+
+PYTHON:
+	1) Copy cnf2sat.py into the directory with your source code.
+	2) Import cnf2sat in your source code.
+	3) Use the function cnf2sat.satisfiable(clauses) to determine whether 
+       the 2CNF expression composed of the given clauses is satisfiable.	
+	
+	Note: The variable clauses should be a list of pairs of integers (either a tuple or a list with two integers) where each pair gives the variables in a single "OR" clause in the 2CNF formula.
+		  In a single clause, the integer 1 represents the variable X1 and the integer -1 represents the variable not-X1.
+		  So clauses = [ (1, -2), (-1, -2) ] represents the 2CNF formula: (X1 or not-X2) and (not-X1 or not-X2). 
+C++:
+	1) Copy cnf2sat.hpp into the directory with your source code.
+	2) Include "./cnf2sat.hpp" in your source code.
+	3) Use the function satisfiable(clauses) to determine whether 
+       the 2CNF expression composed of the given clauses is satisfiable.	
+	
+	Note: The variable clauses should be a vector of pairs of integers where each pair gives the variables in a single "OR" clause in the 2CNF formula.
+		  In a single clause, the integer 1 represents the variable X1 and the integer -1 represents the variable not-X1.
+		  So vector<pair<int, int> > clauses = {make_pair(1, -2), pair(-1, -2)} (c++11) represents the 2CNF formula: (X1 or not-X2) and (not-X1 or not-X2). 
+
+JAVA:
+	1) Copy CNF2SAT.java and OrClause.java into the directory with your source code.
+	2) Construct a 2CNF formula by making an array of OrClause objects where each object stores the information for a single "OR" clause in the formula.
+	3) Construct CNF2SAT object and pass the array of OrClause objects to the constructor.
+	4) cnf2satObjectNameGoesHere.satisfiable() returns true if the formula is satisfiable and false otherwise.
+	
+	Note: Each OrClause object contains two integers. Each integers represents one of the variables in the clause. 
+		  Negative integers represent negations. For example the clause OrClause(1, -2) represents an clause in a 2CNF like: (X1 or not-X2)
+		  
