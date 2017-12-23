@@ -41,9 +41,11 @@ int main() {
     // run the algorithm
     result = kthSmallestSearch(dataFiles, m, n, k);
 
-    cout << result << endl;
+    // For output to console
+    //cout << result << endl;
+
     // Output result to output.txt
-    //outputToFile(result);
+    outputToFile(result);
 
     // close all files that are opened
     for (int i = 0; i < m; i++) {
