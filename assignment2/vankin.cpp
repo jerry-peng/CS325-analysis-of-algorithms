@@ -39,45 +39,33 @@ int main() {
 
 /* vankin function to find the max sum of the vankin board */
 int vankin(vector< vector<int> > board, int n) {
-    int maxSum = board[0][0];
-    int temp = 0, maxTemp;
-    int boardVal;
-    int offset;
+    int maxSum;
+    // Temp array to store temporary highest sum value
     vector<int> s(n, 0);
-
-    /* calculate sums before the halfway */
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < i; j++) {
-            // cache boardVal and temp max for future use
-            boardVal = board[j][i - j];
-
-            // Refresh max sum based on the specific board position
-            if (j == 0) {
-                temp = s[0];
-                s[0] = boardVal + max(s[0], 0);
+        for (int j = 0; j < n; j++) {
+            // start with number on right bottom corner,
+            // assign it to the temp array s, and assign it to maxSum
+            if (i == 0 && j == 0) {
+                s[0] = board[0][0];
+                maxSum = s[0];
             }
+            // If the number is on bottom row, add the max value of (number to
+            // the right, 0)
+            else if (i == 0) {
+                s[j] = board[0][j] + max(s[j - 1], 0);
+            }
+            // If the nubmer is on the right column, add the max value of (number
+            // beneath, 0)
+            else if (j == 0) {
+                s[0] = board[i][0] + max(s[0], 0);
+            }
+            // If the number is not on the right-most column, or bottom-most row,
+            // add the max value of (number beneath, number to the right)
             else {
-                maxTemp = boardVal + max(temp, s[j]);
-                temp = s[j];
-                s[j] = maxTemp;
+                s[j] = board[i][j] + max(s[j], s[j - 1]);
             }
-        }
-        // Get the last max sum
-        s[i] = board[i][0] + max(temp, 0);
-
-        // Check for highest value sum, if bigger than stored, then store it.
-        for (int k = 0; k <= i; k++) {
-            maxSum = max(maxSum, s[k]);
-        }
-    }
-
-    /* calculate sums after the halfway */
-    for (int i = n; i < 2 * n - 1; i++) {
-        offset = i - n + 1;
-
-        for (int j = i - n + 1; j < n; j++) {
-            s[j - offset] = board[j][i - j] + max(s[j - offset], s[j - offset + 1]);
-            maxSum = max(maxSum, s[j - offset]);
+            maxSum = max(maxSum, s[j]);
         }
     }
     return maxSum;
