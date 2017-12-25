@@ -20,9 +20,9 @@ if [ $1 ]; then
 
 else
 
-    g++ *.cpp -o mst
+    g++ mst1.cpp -o mst
     if [ $? -eq 0 ]; then
-        valgrind ./mst
+        ./mst
     fi
 
 fi

@@ -9,26 +9,27 @@
 
 using namespace std;
 
-int MST1st(vector< vector<int> >, vector< vector<bool> >&, int);
-int MST2nd(vector< vector<int> >, vector< vector<bool> >&, vector<int>&, int, int);
-int MST3rd(vector< vector<int> >, vector< vector<bool> >&, vector<int>&, int, int);
+int mst1st(vector< vector<int> >, vector< vector<bool> >&, int);
 vector<int> setupLabels(int);
 void addSafeEdges(vector< vector<int> >, vector< vector<bool> >&, vector<int>, int&, int, int&);
 void countAndLabel(vector< vector<bool> >, vector<int>&, int n);
+vector<int> mst2ndAnd3rd(vector< vector<int> >, vector< vector<bool> > &, int, int);
 void splitLabel(vector< vector<bool> >, vector<int>&, int, int, int);
-int addSafeEdgesConnect(vector< vector<int> >, vector< vector<bool> >&, vector<int>, vector<int>&, int, int, int);
+void connect2Forests(vector< vector<int> >, vector< vector<bool> >&, vector<int>, vector<int>&, int, int, int, int);
+void addMinWeight(vector<int>&, int);
 void outputFile(int, int, int);
-
 vector< vector<int> > getGraphFromFile(int&);
 vector< vector<int> > getGraph(ifstream&, int);
 int min(int, int);
+void connect(vector< vector<bool> >&, int, int);
+void disconnect(vector< vector<bool> >&, int, int);
 void printGraph(vector< vector<int> >, int);
 void printMinWeights(vector<int>, int);
 void printEdgeConnections(vector< vector<bool> >, int);
 
 
 int main() {
-    int weight1, weight2, weight3;
+    int weight1;
 
     // Get the graph from file input.txt
     int n;
@@ -38,37 +39,42 @@ int main() {
     vector< vector<bool> > edgeCheck(n, vector<bool>(n, false));
 
     // Setup an array to memorize the edges
-    vector<int> mem(4, 0);
+    vector<int> weights(2, 0);
 
     // Get the weight of the first minimum spanning tree
-    weight1 = MST1st(graph, edgeCheck, n);
+    weight1 = mst1st(graph, edgeCheck, n);
 
+    // Get the weight of the second and third minimum spanning tree
+    weights = mst2ndAnd3rd(graph, edgeCheck, n, weight1);
     // Get the weight of the second minimum spanning tree
-    weight2 = MST2nd(graph, edgeCheck, mem, n, weight1);
+    //weight2 = MST2nd(graph, edgeCheck, mem, n, weight1);
 
     // Get the weight of the third minimum spanning tree
-    weight3 = MST3rd(graph, edgeCheck, mem, n, weight2);
+    //weight3 = MST3rd(graph, edgeCheck, mem, n, weight2);
 
     // Edge case for n is 1
     if (n == 1) {
         weight1 = 0;
-        weight2 = 0;
-        weight3 = 0;
+        weights[0] = 0;
+        weights[1] = 0;
     }
     // Edge case for n is 2
     if (n == 2) {
         weight1 = graph[0][1];
-        weight2 = graph[0][1];
-        weight3 = graph[0][1];
+        weights[0] = graph[0][1];
+        weights[1] = graph[0][1];
     }
 
+    cout << weight1 << endl;
+    cout << weights[0] << endl;
+    cout << weights[1] << endl;
     /* Output weights to output.txt */
-    outputFile(weight1, weight2, weight3);
+    //outputFile(weight1, weight2, weight3);
     return 0;
 }
 
 /* Minimum Spanning Tree using Boruvka Algorithm */
-int MST1st(vector< vector<int> > graph, vector< vector<bool> > &edgeCheck, int n) {
+int mst1st(vector< vector<int> > graph, vector< vector<bool> > &edgeCheck, int n) {
     int weight = 0;
     // Set up forests counter
     int count = n;
@@ -104,7 +110,6 @@ void addSafeEdges(vector< vector<int> > graph, vector< vector<bool> > &edgeCheck
     // Get minimum weight for each forest
     for (int u = 0; u < n - 1; u++) {
         for (int v = u + 1; v < n; v++) {
-
             if (labels[u] != labels[v]) {
                 tempWeight = graph[u][v];
                 idxU = 3 * labels[u];
@@ -130,8 +135,7 @@ void addSafeEdges(vector< vector<int> > graph, vector< vector<bool> > &edgeCheck
         v = minWeightData[3 * i + 1];
         // If the data exist for the forest, check the edge, and add weight, and reduce count
         if (u != -1 && v != -1 && edgeCheck[u][v] == false) {
-            edgeCheck[u][v] = true;
-            edgeCheck[v][u] = true;
+            connect(edgeCheck, u, v);
             weight += minWeightData[3 * i + 2];
             numConnect++;
         }
@@ -180,83 +184,36 @@ void countAndLabel(vector< vector<bool> > edgeCheck, vector<int>& labels, int n)
     }
 }
 
-/* 2nd Minimum Spanning tree by removing an edge in MST and reconstruct */
-int MST2nd(vector< vector<int> > graph, vector< vector<bool> > &edgeCheck, \
-        vector<int> &mem, int n, int weight1) {
-    int weightInc, minWeightInc = -1;
-    vector<int> labels(n, 0);
-    vector<int> newEdge(2, 0);
-    for (int u = 0; u < n - 1; u++) {
-        for (int v = u + 1; v < n; v++) {
-            if (edgeCheck[u][v]) {
-                edgeCheck[u][v] = false;
-                edgeCheck[v][u] = false;
-                splitLabel(edgeCheck, labels, n, u, v);
-                edgeCheck[u][v] = true;
-                edgeCheck[v][u] = true;
-                weightInc = addSafeEdgesConnect(graph, edgeCheck, labels, newEdge, n, u, v);
-                if (minWeightInc == -1) {
-                    minWeightInc = weightInc;
-                    mem[0] = newEdge[0];
-                    mem[1] = newEdge[1];
-                    mem[2] = u;
-                    mem[3] = v;
-                }
-                else if (weightInc < minWeightInc) {
-                    minWeightInc = weightInc;
-                    mem[0] = newEdge[0];
-                    mem[1] = newEdge[1];
-                    mem[2] = u;
-                    mem[3] = v;
-                }
-            }
-        }
-    }
-    /* Reassign EdgeCheck for the new spanning tree */
-    edgeCheck[mem[2]][mem[3]] = false;
-    edgeCheck[mem[3]][mem[2]] = false;
-    edgeCheck[mem[0]][mem[1]] = true;
-    edgeCheck[mem[1]][mem[0]] = true;
-
-    return weight1 + minWeightInc;
+/* Connect and disconnect edges */
+void connect(vector< vector<bool> > &edgeCheck, int u, int v) {
+    edgeCheck[u][v] = true;
+    edgeCheck[v][u] = true;
 }
 
-/* 3rd Minimum Spanning tree by removing an edge in MST and reconstruct */
-int MST3rd(vector< vector<int> > graph, vector< vector<bool> > &edgeCheck, \
-        vector<int> &mem, int n, int weight2) {
+void disconnect(vector< vector<bool> > &edgeCheck, int u, int v) {
+    edgeCheck[u][v] = false;
+    edgeCheck[v][u] = false;
+}
 
-    int weightInc, minWeightInc = -1;
+/* Get 2nd and 3rd mst weight */
+vector<int> mst2ndAnd3rd(vector< vector<int> > graph, vector< vector<bool> > &edgeCheck, int n, int weight1) {
+    vector<int> weights(2, -1);
     vector<int> labels(n, 0);
-    vector<int> newEdge(2, 0);
-    vector<int> weights;
     for (int u = 0; u < n - 1; u++) {
         for (int v = u + 1; v < n; v++) {
             if (edgeCheck[u][v]) {
-                edgeCheck[u][v] = false;
-                edgeCheck[v][u] = false;
+                // First disconnect a connected edge from 1st mst
+                disconnect(edgeCheck, u, v);
+                // Label the 2 forests
                 splitLabel(edgeCheck, labels, n, u, v);
-                edgeCheck[u][v] = true;
-                edgeCheck[v][u] = true;
-                if (u == mem[0] && v == mem[1]) {
-                    edgeCheck[mem[2]][mem[3]] = true;
-                    edgeCheck[mem[3]][mem[2]] = true;
-                }
-                weightInc = addSafeEdgesConnect(graph, edgeCheck, labels, newEdge, n, u, v);
-                weights.push_back(weightInc);
-                if (u == mem[0] && v == mem[1]) {
-                    edgeCheck[mem[2]][mem[3]] = false;
-                    edgeCheck[mem[3]][mem[2]] = false;
-                }
-                if (minWeightInc == -1) {
-                    minWeightInc = weightInc;
-                }
-                else if (weightInc < minWeightInc && weightInc >= 0) {
-                    minWeightInc = weightInc;
-                }
+                // Restore 1st mst
+                connect(edgeCheck, u, v);
+                // Then connect the forests
+                connect2Forests(graph, edgeCheck, labels, weights, n, u, v, weight1);
             }
         }
     }
-    return weight2 + minWeightInc;
+    return weights;
 }
 
 /* Label splitted tree */
@@ -287,27 +244,38 @@ void splitLabel(vector< vector<bool> > edgeCheck, vector<int>& labels, int n, in
 }
 
 /* Add Edge to connect 2 forest and create another Spanning tree */
-int addSafeEdgesConnect(vector< vector<int> > graph, vector< vector<bool> > &edgeCheck, \
-        vector<int> labels, vector<int> &newEdge, int n, int oldU, int oldV) {
+void connect2Forests(vector< vector<int> > graph, vector< vector<bool> > &edgeCheck, \
+        vector<int> labels, vector<int> &weights, int n, int oldU, int oldV, int weight1) {
     int tempWeight = -1;
-    int edgeWeight = graph[oldU][oldV];
+    int weight = weight1 - graph[oldU][oldV];
     for (int u = 0; u < n - 1; u++) {
         for (int v = u + 1; v < n; v++) {
             if (labels[u] != labels[v] && edgeCheck[u][v] == false) {
-                if (tempWeight == -1) {
-                    newEdge[0] = u;
-                    newEdge[1] = v;
-                    tempWeight = graph[u][v];
-                }
-                else if (tempWeight > graph[u][v]) {
-                    newEdge[0] = u;
-                    newEdge[1] = v;
-                    tempWeight = graph[u][v];
-                }
+                tempWeight = weight + graph[u][v];
+                addMinWeight(weights, tempWeight);
             }
         }
     }
-    return tempWeight - graph[oldU][oldV];
+}
+
+void addMinWeight(vector<int> &weights, int tempWeight) {
+    if (weights[0] == -1) {
+        weights[0] = tempWeight;
+    } else if (weights[1] == -1) {
+        if (weights[0] <= tempWeight) {
+            weights[1] = tempWeight;
+        } else {
+            weights[1] = weights[0];
+            weights[0] = tempWeight;
+        }
+    } else {
+        if (tempWeight <= weights[0]) {
+            weights[1] = weights[0];
+            weights[0] = tempWeight;
+        } else if (tempWeight < weights[1]){
+            weights[1] = tempWeight;
+        }
+    }
 }
 
 /* Output result to file */
