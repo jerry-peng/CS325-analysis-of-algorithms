@@ -20,7 +20,7 @@ if [ $1 ]; then
 
 else
 
-    g++ mst1.cpp -o mst
+    g++ mst.cpp -o mst
     if [ $? -eq 0 ]; then
         ./mst
     fi
